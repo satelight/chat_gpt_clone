@@ -2,13 +2,9 @@ use actix_cors::Cors;
 use actix_web::{
     get, http, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder,
 };
+use lib_chat_gpt::Message;
 
 const CONTENT_TYPE_STR: &str = "text/plain; charset=utf-8";
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct FrontEndRequest {
-    pub question: String,
-}
 
 #[get("/")]
 async fn hello() -> HttpResponse {
@@ -18,10 +14,11 @@ async fn hello() -> HttpResponse {
 }
 
 #[post("/echo")]
-async fn echo(req_body: actix_web::web::Json<FrontEndRequest>) -> impl Responder {
-    let response = lib_chat_gpt::response_from_chat_gpt(&req_body.question)
+async fn echo(req_body: web::Json<Vec<Message>>) -> impl Responder {
+    let response = lib_chat_gpt::response_from_chat_gpt(req_body.0)
         .await
         .unwrap();
+    println!("{}", response);
     HttpResponse::Ok()
         .content_type(CONTENT_TYPE_STR)
         .body(response)

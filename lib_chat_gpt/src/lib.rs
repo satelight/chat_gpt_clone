@@ -17,56 +17,57 @@ use std::env;
 pub const OPENAI_API_URL: &str = "https://api.openai.com/v1/chat/completions";
 pub const AI_RESPONSE_ROLE: &str = "あなたは優秀なAIアシスタントです。";
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ChatGptRequest {
-    id: String,
     model: String,
     messages: Vec<Message>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Message {
     role: String,
     content: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct ChatGptResponse {
-    id: String,
     choices: Vec<Choice>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Choice {
     message: MessageResponse,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MessageResponse {
     role: String,
     content: String,
 }
 
-pub async fn response_from_chat_gpt(question: &str) -> anyhow::Result<String> {
+pub async fn response_from_chat_gpt(request_messages: Vec<Message>) -> anyhow::Result<String> {
     // .envファイルの記述を環境変数に追加。
     dotenv().ok();
     let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
 
+    // リクエスト用メッセージ作成。
+    let ai_role_model = Message {
+        role: "system".to_string(),
+        content: String::from(AI_RESPONSE_ROLE),
+    };
+    let mut msgs = vec![];
+    msgs.push(ai_role_model);
+    println!("{:?}", request_messages);
+    for resqest_message in request_messages {
+        msgs.push(resqest_message);
+    }
+
+    println!("{:?}", msgs);
     // openAIのAPIにポストリクエストクライエント作成
     let client = reqwest::Client::new();
     let request = ChatGptRequest {
-        id: String::from("chatcmpl-9nGIn8jEeBc1tmLtZg5J7ljLDbSk5"),
         model: "gpt-3.5-turbo".to_string(),
-        messages: vec![
-            Message {
-                role: "system".to_string(),
-                content: String::from(AI_RESPONSE_ROLE),
-            },
-            Message {
-                role: "user".to_string(),
-                content: String::from(question),
-            },
-        ],
+        messages: msgs,
     };
 
     // openAIのAPIにリクエストを送る
@@ -80,8 +81,10 @@ pub async fn response_from_chat_gpt(question: &str) -> anyhow::Result<String> {
     //
     if res.status().is_success() {
         let response: ChatGptResponse = res.json().await.expect("Failed to parse response");
+        println!("{:?}", response.choices[0]);
         return Ok(response.choices[0].message.content.clone());
     } else {
+        print!("NG");
         return Ok(res.text().await?);
     }
 }

@@ -1,24 +1,95 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+interface RequestMessage {
+  role: string;
+  content: string;
+}
+
+type Props = {
+  inputData?: string;
+  question?: string;
+  answer?: string;
+};
+
+const QuestionSection: React.FC<Props> = (props) => {
+  return (
+    <div className="col-start-1 col-end-8 p-3 rounded-lg">
+      <div className="flex flex-row items-center">
+        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+          Q
+        </div>
+        <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
+          <div>{props.question}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AnswerSection: React.FC<Props> = (props) => {
+  return (
+    <div className="col-start-6 col-end-13 p-3 rounded-lg">
+      <div className="flex items-center justify-start flex-row-reverse">
+        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+          A
+        </div>
+        <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
+          <div>{props.answer}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ChatView = () => {
-  // const conversations = { yourQestion: "koreha" };
+  // -----------------------------------------------------------------------------
   const [formTextData, setFormTextData] = useState<string>("");
   const [chatDisplayData, setChatDisplayData] = useState<string>("");
   const [answerFromChatGPT, setAnswerFromChatGPT] = useState<string>("");
-
+  const [requestMessages, setRequestMessages] = useState<RequestMessage[]>([]);
+  let newRequestMessages: RequestMessage[] = [];
+  // -----------------------------------------------------------------------------
+  //
+  //
+  // -----------------------------------------------------------------------------
   const setQuestion = async () => {
     setChatDisplayData(formTextData);
-    const data = {
-      question: formTextData,
+    let insertData: RequestMessage = {
+      role: "user",
+      content: formTextData,
     };
-    const res = await axios.post("http://localhost:8080/echo", data);
-    console.log(res.data);
+
+    // useStateはDOMの変化がないときは即座に変数に反映しない仕様なので、新しい変数にディープコピーして挿入。
+    newRequestMessages.push(insertData);
+    setRequestMessages(newRequestMessages);
+    const res = await axios.post(
+      "http://localhost:8080/echo",
+      newRequestMessages
+    );
+
     setFormTextData("");
     setAnswerFromChatGPT(res.data);
   };
+  // -----------------------------------------------------------------------------
+  //
+  //
+  // -----------------------------------------------------------------------------
+  useEffect(() => {
+    let testData: RequestMessage = {
+      role: "user",
+      content: "pythonについて教えて下さい。",
+    };
+    newRequestMessages.push(testData);
+    console.log(newRequestMessages);
+    setChatDisplayData(newRequestMessages[0].content);
+    // setQuestion();
+  }, []);
 
+  // -----------------------------------------------------------------------------
+  //
+  //
   return (
     <div className="flex flex-col flex-auto h-full p-4 w-full">
       <div className="flex flex-col flex-auto flex-shrink-0 bg-white h-full  p-8">
@@ -26,28 +97,9 @@ const ChatView = () => {
           <div className="flex flex-col h-full w-full">
             <div className="grid grid-cols-12 gap-y-2">
               {/* あなた */}
-              <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                <div className="flex flex-row items-center">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                    Q
-                  </div>
-                  <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                    <div>{chatDisplayData}</div>
-                  </div>
-                </div>
-              </div>
-
+              <QuestionSection question={chatDisplayData} />
               {/* chat gpt 回答 */}
-              <div className="col-start-6 col-end-13 p-3 rounded-lg">
-                <div className="flex items-center justify-start flex-row-reverse">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                    A
-                  </div>
-                  <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                    <div>{answerFromChatGPT}</div>
-                  </div>
-                </div>
-              </div>
+              <AnswerSection answer={answerFromChatGPT} />
             </div>
           </div>
         </div>

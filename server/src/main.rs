@@ -1,3 +1,4 @@
+mod crud_json;
 use actix_cors::Cors;
 use actix_web::{
     get, http, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder,
@@ -7,14 +8,14 @@ use lib_chat_gpt::Message;
 const CONTENT_TYPE_STR: &str = "text/plain; charset=utf-8";
 
 #[get("/")]
-async fn hello() -> HttpResponse {
+pub async fn hello() -> HttpResponse {
     HttpResponse::Ok()
         .content_type(CONTENT_TYPE_STR)
         .body("Hello! I'm actix-web!")
 }
 
-#[post("/echo")]
-async fn echo(req_body: web::Json<Vec<Message>>) -> impl Responder {
+#[post("/response_chatgpt")]
+pub async fn response_chatgpt(req_body: web::Json<Vec<Message>>) -> impl Responder {
     let response = lib_chat_gpt::response_from_chat_gpt(req_body.0)
         .await
         .unwrap();
@@ -40,8 +41,14 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::new("%a %{User-agent}i"))
-            .service(hello)
-            .service(echo)
+            .service(web::scope("").service(hello).service(response_chatgpt))
+            .service(
+                web::scope("/json_crud")
+                    .service(crud_json::route::create)
+                    .service(crud_json::route::read)
+                    .service(crud_json::route::update)
+                    .service(crud_json::route::delete),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()

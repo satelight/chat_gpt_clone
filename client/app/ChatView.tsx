@@ -65,7 +65,7 @@ const ChatView = () => {
     newRequestMessages.push(insertData);
     setRequestMessages(newRequestMessages);
     const res = await axios.post(
-      "http://localhost:8080/echo",
+      "http://localhost:8080/response_chatgpt",
       newRequestMessages
     );
 

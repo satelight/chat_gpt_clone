@@ -17,29 +17,29 @@ use std::env;
 pub const OPENAI_API_URL: &str = "https://api.openai.com/v1/chat/completions";
 pub const AI_RESPONSE_ROLE: &str = "あなたは優秀なAIアシスタントです。";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ChatGptRequest {
     model: String,
     messages: Vec<Message>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Message {
     role: String,
     content: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ChatGptResponse {
     choices: Vec<Choice>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Choice {
     message: MessageResponse,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MessageResponse {
     role: String,
     content: String,

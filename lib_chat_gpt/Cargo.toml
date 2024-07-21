@@ -1,11 +1,10 @@
 [package]
-name = "chat_gpt"
+name = "lib_chat_gpt"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-async-openai = "0.23.3"
 dotenv = "0.15.0"
 reqwest.workspace = true
 serde.workspace = true

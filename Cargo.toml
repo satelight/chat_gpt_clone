@@ -1,5 +1,5 @@
 [workspace]
-members = [ "chat_gpt", "server"]
+members = ["lib_chat_gpt", "server"]
 resolver = "2"
 
 [workspace.dependencies]

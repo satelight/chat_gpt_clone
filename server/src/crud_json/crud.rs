@@ -9,7 +9,7 @@ pub struct JsonFile {
 }
 
 impl JsonFile {
-    pub fn new(file_path: &str, contents: &[Message]) -> Self {
+    pub fn _new(file_path: &str, contents: &[Message]) -> Self {
         Self {
             file_path: file_path.to_string(),
             contents: contents.to_vec(),
@@ -45,5 +45,19 @@ impl JsonFile {
     pub fn delete(file_path: &str) -> anyhow::Result<()> {
         std::fs::remove_file(file_path)?;
         Ok(())
+    }
+
+    pub fn read_file_names(dir_path: &str) -> anyhow::Result<Vec<String>> {
+        let read_dir = std::fs::read_dir(dir_path)?;
+        let mut json_file_names = vec![];
+        for entry in read_dir.flatten() {
+            if let Some(file_name) = entry.file_name().to_str() {
+                if file_name.contains(".json") {
+                    json_file_names.push(file_name.replace(".json", "").to_string());
+                }
+            }
+        }
+
+        Ok(json_file_names)
     }
 }

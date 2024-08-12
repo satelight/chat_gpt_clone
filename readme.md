@@ -23,7 +23,7 @@ client側の開発版の起動方法
 
 ```powershell
 cd client
-cd npm run dev
+npm run dev
 ```
 
 サーバー側の起動方法

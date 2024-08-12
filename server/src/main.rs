@@ -19,7 +19,6 @@ pub async fn response_chatgpt(req_body: web::Json<Vec<Message>>) -> impl Respond
     let response = lib_chat_gpt::response_from_chat_gpt(req_body.0)
         .await
         .unwrap();
-    println!("{}", response);
     HttpResponse::Ok()
         .content_type(CONTENT_TYPE_STR)
         .body(response)
@@ -41,13 +40,15 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::new("%a %{User-agent}i"))
-            .service(web::scope("").service(hello).service(response_chatgpt))
+            .service(hello)
+            .service(response_chatgpt)
             .service(
                 web::scope("/json_crud")
-                    .service(crud_json::route::create)
                     .service(crud_json::route::read)
                     .service(crud_json::route::update)
-                    .service(crud_json::route::delete),
+                    .service(crud_json::route::delete)
+                    .service(crud_json::route::json_crud_route)
+                    .service(crud_json::route::json_file_names),
             )
     })
     .bind(("127.0.0.1", 8080))?

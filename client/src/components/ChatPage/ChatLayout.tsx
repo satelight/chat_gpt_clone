@@ -1,21 +1,15 @@
 import ChatView from "./ChatView";
 import SideBar from "./SideBar";
 import SwitchService from "./SwitchService";
-import TextArea from "./TextArea";
 
 const ChatLayout = () => {
   return (
-    <div className="h-full w-full overflow-hidden">
-      <div className="flex">
-        <SideBar />
-        <ChatView />
-      </div>
-      <div className="flex">
-        <div className="w-40">
+    <div className="bg-white">
+      <div className="overflow-hidden">
+        <div className="grid grid-cols-10">
+          <SideBar />
           <SwitchService />
-        </div>
-        <div className="flex-grow h-full">
-          <TextArea />
+          <ChatView />
         </div>
       </div>
     </div>

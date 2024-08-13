@@ -1,7 +1,8 @@
 mod crud_json;
 use actix_cors::Cors;
 use actix_web::{
-    get, http, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder,
+    get, http, http::header::ContentType, middleware::Logger, post, web, App, HttpResponse,
+    HttpServer, Responder,
 };
 use lib_chat_gpt::Message;
 
@@ -19,8 +20,9 @@ pub async fn response_chatgpt(req_body: web::Json<Vec<Message>>) -> impl Respond
     let response = lib_chat_gpt::response_from_chat_gpt(req_body.0)
         .await
         .unwrap();
+    println!("{}", response);
     HttpResponse::Ok()
-        .content_type(CONTENT_TYPE_STR)
+        .content_type(ContentType::plaintext())
         .body(response)
 }
 
@@ -31,7 +33,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:3000")
+            .allowed_origin("http://localhost:5173")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)

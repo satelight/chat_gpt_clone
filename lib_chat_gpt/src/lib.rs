@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 pub const OPENAI_API_URL: &str = "https://api.openai.com/v1/chat/completions";
-pub const AI_RESPONSE_ROLE: &str = "あなたは優秀なAIアシスタントです。";
+pub const AI_RESPONSE_ROLE: &str =
+    "あなたは優秀なAIアシスタントです。返答はmarkdown形式でお願いします";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ChatGptRequest {

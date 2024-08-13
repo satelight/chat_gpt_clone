@@ -426,6 +426,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "anyhow",
+ "dotenv",
  "encoding_rs",
  "env_logger",
  "lib_chat_gpt",
@@ -953,7 +954,6 @@ name = "lib_chat_gpt"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "dotenv",
  "reqwest",
  "serde",
  "serde_json",

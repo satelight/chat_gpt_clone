@@ -11,5 +11,6 @@ reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 actix-cors = "0.7.0"
-lib_chat_gpt = { path = "../lib_chat_gpt" }
 encoding_rs = "0.8.34"
+dotenv = "*"
+lib_chat_gpt = { path = "../lib_chat_gpt" }

@@ -1,20 +1,12 @@
-//! ルートディレクトリに.envファイルで環境変数を追加する必要がある。
-//! 以下を追加する。
-//!
-//! ```
-//! OPENAI_API_KEY=""
-//! ```
-//!
-//!
 //! 会話の履歴データはAPIに保存しているわけでない。
 //! こちらで会話の履歴を保存する必要がある。
 
 use anyhow::Ok;
-use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
-use std::env;
 
 pub const OPENAI_API_URL: &str = "https://api.openai.com/v1/chat/completions";
+
+/// マークダウン形式で固定。
 pub const AI_RESPONSE_ROLE: &str =
     "あなたは優秀なAIアシスタントです。返答はmarkdown形式でお願いします";
 
@@ -46,11 +38,10 @@ pub struct MessageResponse {
     content: String,
 }
 
-pub async fn response_from_chat_gpt(request_messages: Vec<Message>) -> anyhow::Result<String> {
-    // .envファイルの記述を環境変数に追加。
-    dotenv().ok();
-    let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
-
+pub async fn response_from_chat_gpt(
+    request_messages: Vec<Message>,
+    api_key: &str,
+) -> anyhow::Result<String> {
     // リクエスト用メッセージ作成。
     let ai_role_model = Message {
         role: "system".to_string(),

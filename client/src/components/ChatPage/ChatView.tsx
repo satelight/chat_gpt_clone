@@ -33,15 +33,15 @@ const Answer = ({ answerText }: { answerText: string }) => {
 };
 
 const ChatView = () => {
-  const [QuestionText, setQuestionText] = useState<string>("");
+  const [questionText, setQuestionText] = useState<string>("");
   const [displayQuestionText, setDisplayQuestionText] = useState<string>("");
   const [displayAnswerText, setDisplayAnswerText] = useState<string>("");
 
   let chatHistory: string[] = [];
 
   function addDisplayQuestionText() {
-    setDisplayQuestionText(QuestionText);
-    chatHistory.push(QuestionText);
+    setDisplayQuestionText(questionText);
+    chatHistory.push(questionText);
     sendQAndWriteA();
     setQuestionText("");
   }
@@ -50,7 +50,7 @@ const ChatView = () => {
   async function sendQAndWriteA() {
     const requestMessage: RequestMessage = {
       role: "user",
-      content: QuestionText,
+      content: questionText,
     };
     const newMessages: RequestMessage[] = [requestMessage];
     const res: string = await sendChatGPTAPI(newMessages);
@@ -61,7 +61,12 @@ const ChatView = () => {
   return (
     <div className="col-span-7">
       <div className="flex-grow bg-white h-96 w-full overflow-auto">
-        <Question questionText={displayQuestionText} />
+        {displayQuestionText === "" ? (
+          <div></div>
+        ) : (
+          <Question questionText={displayQuestionText} />
+        )}
+
         <Answer answerText={displayAnswerText} />
       </div>
       <div className="flex flex-grow justify-center mx-auto w-full h-24 items-center bg-white">
@@ -72,7 +77,7 @@ const ChatView = () => {
               className="border-0  justify-center bg-slate-100 overflow-x-hidden w-full cursor-auto resize-none focus:outline-none"
               rows={1}
               placeholder="質問を送信する"
-              value={QuestionText}
+              value={questionText}
               onChange={(e) => setQuestionText(e.target.value)}
             />
             <button className="" onClick={addDisplayQuestionText}>

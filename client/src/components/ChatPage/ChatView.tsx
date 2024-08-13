@@ -1,3 +1,8 @@
+// 2024-08-13
+// react-markdownについては古い記事が多いので
+// 公式ドキュメントを参照すること。
+// 公式ドキュメント通りにコードのシンタックスハイライトを追加しても
+// vscodeからのlint警告があるので注意。今のところバグ修正待ち。
 import { useState } from "react";
 import { FaArrowCircleUp } from "react-icons/fa";
 import { sendChatGPTAPI, RequestMessage } from "../../lib/ChatGPT";
@@ -5,6 +10,7 @@ import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 
+// ユーザー側の質問内容欄
 const Question = ({ questionText }: { questionText: string }) => {
   return (
     <div className="w-full">
@@ -15,6 +21,7 @@ const Question = ({ questionText }: { questionText: string }) => {
   );
 };
 
+// chatGPTからの返答欄
 const Answer = ({ answerText }: { answerText: string }) => {
   return (
     <div className="w-full">
@@ -30,15 +37,17 @@ const ChatView = () => {
   const [displayQuestionText, setDisplayQuestionText] = useState<string>("");
   const [displayAnswerText, setDisplayAnswerText] = useState<string>("");
 
-  // let  historyTalk =
+  let chatHistory: string[] = [];
 
   function addDisplayQuestionText() {
     setDisplayQuestionText(QuestionText);
-    fetchData();
+    chatHistory.push(QuestionText);
+    sendQAndWriteA();
     setQuestionText("");
   }
 
-  async function fetchData() {
+  // 質問を送って答え表示。。addDisplayQuestionText関数で利用。
+  async function sendQAndWriteA() {
     const requestMessage: RequestMessage = {
       role: "user",
       content: QuestionText,
@@ -76,6 +85,7 @@ const ChatView = () => {
   );
 };
 
+// markdown内のコード部分をシンタックスハイライトのコードに変更する
 const CodeBlock = ({ markdown }: { markdown: string }) => {
   return (
     <Markdown
@@ -85,7 +95,9 @@ const CodeBlock = ({ markdown }: { markdown: string }) => {
           // refのlintからの警告はバグのようなので今のところ放置で。動きには問題なし。
           // https://github.com/remarkjs/react-markdown/issues/826
           // https://github.com/remarkjs/react-markdown/issues/666#issuecomment-1001215783
-          const { children, className, ref, ...rest } = props;
+          // 変数refがないとSyntaxHighlighterで警告が出る。
+          // 右下のeslint-disable-lineのコメント分でrefの変数を未使用警告を無視できるので追加。
+          const { children, className, ref, ...rest } = props; // eslint-disable-line
           const match = /language-(\w+)/.exec(className || "");
           return match ? (
             <SyntaxHighlighter

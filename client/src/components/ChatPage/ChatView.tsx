@@ -32,66 +32,13 @@ const Answer = ({ answerText }: { answerText: string }) => {
   );
 };
 
-const ChatView = () => {
-  const [questionText, setQuestionText] = useState<string>("");
-  const [ChatHistorys, setdisplayChatHistorys] = useState<RequestMessage[]>([]);
-  let chatHistorysForRequest: RequestMessage[] = [];
-
-  function addDisplayQuestionText() {
-    sendQAndWriteA();
-    setQuestionText("");
-  }
-
-  // 質問を送って答え表示。。addDisplayQuestionText関数で利用。
-  async function sendQAndWriteA() {
-    const userMessage: RequestMessage = {
-      role: "user",
-      content: questionText,
-    };
-
-    setdisplayChatHistorys((c) => [...c, userMessage]);
-    chatHistorysForRequest.push(userMessage);
-
-    const chatGPTAnswer: string = await sendChatGPTAPI(chatHistorysForRequest);
-    const answerMessage: RequestMessage = {
-      role: "assistant",
-      content: chatGPTAnswer,
-    };
-    chatHistorysForRequest.push(answerMessage);
-
-    setdisplayChatHistorys((c) => [...c, answerMessage]);
-  }
-
+// Loadingからの返答欄
+const Loading = () => {
   return (
-    <div className="col-span-7">
-      <div className="flex-grow bg-white h-96 w-full overflow-auto">
-        {ChatHistorys.map((displayChatHistory, index) => (
-          <div key={index}>
-            {displayChatHistory.role === "user" && (
-              <Question questionText={displayChatHistory.content} />
-            )}
-            {displayChatHistory.role === "assistant" && (
-              <Answer answerText={displayChatHistory.content} />
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-grow justify-center mx-auto w-full h-24 items-center bg-white">
-        <div className="flex"></div>
-        <div className="flex w-full py-4 px-4">
-          <div className="flex flex-auto bg-slate-100 w-full mx-20 my-8 px-8 py-4 rounded-full">
-            <textarea
-              className="border-0  justify-center bg-slate-100 overflow-x-hidden w-full cursor-auto resize-none focus:outline-none"
-              rows={1}
-              placeholder="質問を送信する"
-              value={questionText}
-              onChange={(e) => setQuestionText(e.target.value)}
-            />
-            <button className="" onClick={addDisplayQuestionText}>
-              <FaArrowCircleUp className="text-lg  justify-center h-8 w-8 text-slate-400" />
-            </button>
-          </div>
-        </div>
+    <div className="w-full">
+      {/* <div className=" h-4 w-4 bg-blue-600 rounded-full"></div> */}
+      <div className="animate-pulse mt-4 mx-32 px-8 rounded-full text-lg">
+        ...回答待ち
       </div>
     </div>
   );
@@ -127,6 +74,99 @@ const CodeBlock = ({ markdown }: { markdown: string }) => {
         },
       }}
     />
+  );
+};
+
+// main部分
+const ChatView = () => {
+  // textareaの値の読み取り
+  const [questionText, setQuestionText] = useState<string>("");
+  // chat内容の値の読み取り
+  const [ChatHistorys, setChatHistorys] = useState<RequestMessage[]>([]);
+  // 回答待ちのtrue/false
+  const [isWaitResponse, setIsWaitResponse] = useState(false);
+  // ボタン操作の制御用
+  const [isdisableButton, setIsdisableButton] = useState(true);
+
+  // requestを投げるとき用の変数。
+  const chatHistorysForRequest: RequestMessage[] = [];
+
+  // 質問を送って答え表示。
+  async function sendQAndWriteA() {
+    setIsWaitResponse(true);
+    setIsdisableButton(() => true);
+    const userMessage: RequestMessage = {
+      role: "user",
+      content: questionText,
+    };
+    setQuestionText("");
+
+    setChatHistorys((c) => [...c, userMessage]);
+    chatHistorysForRequest.push(userMessage); //useStateは随時に変数を更新しないため、普通の配列に入れている。
+
+    const chatGPTAnswer: string = await sendChatGPTAPI(chatHistorysForRequest);
+    const answerMessage: RequestMessage = {
+      role: "assistant",
+      content: chatGPTAnswer,
+    };
+    chatHistorysForRequest.push(answerMessage); //useStateは随時に変数を更新しないため、普通の配列に入れている。
+
+    setChatHistorys((c) => [...c, answerMessage]);
+    setIsWaitResponse(false);
+    setIsdisableButton(() => false);
+  }
+
+  return (
+    <div className="col-span-7">
+      <div className="flex-grow bg-white h-96 w-full overflow-auto">
+        {ChatHistorys.map((displayChatHistory, index) => (
+          <div key={index}>
+            {displayChatHistory.role === "user" && (
+              <Question questionText={displayChatHistory.content} />
+            )}
+            {displayChatHistory.role === "assistant" && (
+              <Answer answerText={displayChatHistory.content} />
+            )}
+          </div>
+        ))}
+        {isWaitResponse === true && <Loading />}
+      </div>
+      <div className="flex flex-grow justify-center mx-auto w-full h-24 items-center bg-white">
+        <div className="flex"></div>
+        <div className="flex w-full py-4 px-4">
+          <div className="flex flex-auto bg-slate-100 w-full mx-20 my-8 px-8 py-4 rounded-full">
+            <textarea
+              className="border-0  justify-center bg-slate-100 overflow-x-hidden w-full cursor-auto resize-none focus:outline-none"
+              rows={1}
+              placeholder="質問を送信する"
+              value={questionText}
+              onChange={(e) => {
+                setQuestionText(e.target.value);
+                if (e.target.value.length === 0) {
+                  setIsdisableButton(true);
+                } else {
+                  setIsdisableButton(false);
+                }
+              }}
+            />
+
+            <button
+              className=""
+              onClick={sendQAndWriteA}
+              disabled={isdisableButton}
+            >
+              <FaArrowCircleUp
+                className={
+                  isdisableButton
+                    ? "text-lg  justify-center h-8 w-8 text-gray-200"
+                    : "text-lg  justify-center h-8 w-8 text-slate-600"
+                }
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

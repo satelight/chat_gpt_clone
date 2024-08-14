@@ -34,40 +34,47 @@ const Answer = ({ answerText }: { answerText: string }) => {
 
 const ChatView = () => {
   const [questionText, setQuestionText] = useState<string>("");
-  const [displayQuestionText, setDisplayQuestionText] = useState<string>("");
-  const [displayAnswerText, setDisplayAnswerText] = useState<string>("");
-
-  let chatHistory: string[] = [];
+  const [ChatHistorys, setdisplayChatHistorys] = useState<RequestMessage[]>([]);
+  let chatHistorysForRequest: RequestMessage[] = [];
 
   function addDisplayQuestionText() {
-    setDisplayQuestionText(questionText);
-    chatHistory.push(questionText);
     sendQAndWriteA();
     setQuestionText("");
   }
 
   // 質問を送って答え表示。。addDisplayQuestionText関数で利用。
   async function sendQAndWriteA() {
-    const requestMessage: RequestMessage = {
+    const userMessage: RequestMessage = {
       role: "user",
       content: questionText,
     };
-    const newMessages: RequestMessage[] = [requestMessage];
-    const res: string = await sendChatGPTAPI(newMessages);
-    console.log(res);
-    setDisplayAnswerText(res);
+
+    setdisplayChatHistorys((c) => [...c, userMessage]);
+    chatHistorysForRequest.push(userMessage);
+
+    const chatGPTAnswer: string = await sendChatGPTAPI(chatHistorysForRequest);
+    const answerMessage: RequestMessage = {
+      role: "assistant",
+      content: chatGPTAnswer,
+    };
+    chatHistorysForRequest.push(answerMessage);
+
+    setdisplayChatHistorys((c) => [...c, answerMessage]);
   }
 
   return (
     <div className="col-span-7">
       <div className="flex-grow bg-white h-96 w-full overflow-auto">
-        {displayQuestionText === "" ? (
-          <div></div>
-        ) : (
-          <Question questionText={displayQuestionText} />
-        )}
-
-        <Answer answerText={displayAnswerText} />
+        {ChatHistorys.map((displayChatHistory, index) => (
+          <div key={index}>
+            {displayChatHistory.role === "user" && (
+              <Question questionText={displayChatHistory.content} />
+            )}
+            {displayChatHistory.role === "assistant" && (
+              <Answer answerText={displayChatHistory.content} />
+            )}
+          </div>
+        ))}
       </div>
       <div className="flex flex-grow justify-center mx-auto w-full h-24 items-center bg-white">
         <div className="flex"></div>

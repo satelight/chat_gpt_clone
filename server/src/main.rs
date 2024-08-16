@@ -10,21 +10,14 @@
 mod crud_json;
 use actix_cors::Cors;
 use actix_web::{
-    get, http, http::header::ContentType, middleware::Logger, post, web, App, HttpResponse,
-    HttpServer, Responder,
+    http::{self, header::ContentType},
+    middleware::Logger,
+    post, web, App, HttpResponse, HttpServer, Responder,
 };
+
 use dotenv::dotenv;
 use lib_chat_gpt::Message;
 use std::env;
-
-const CONTENT_TYPE_STR: &str = "text/plain; charset=utf-8";
-
-#[get("/")]
-pub async fn hello() -> HttpResponse {
-    HttpResponse::Ok()
-        .content_type(CONTENT_TYPE_STR)
-        .body("Hello! I'm actix-web!")
-}
 
 #[post("/response_chatgpt")]
 pub async fn response_chatgpt(req_body: web::Json<Vec<Message>>) -> impl Responder {
@@ -49,8 +42,8 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5173")
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_origin("http://localhost:5173") // 開発用の許可ポート番号
+            .allowed_methods(vec!["GET", "POST"]) // 開発用の許可メソッド
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
@@ -58,7 +51,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::new("%a %{User-agent}i"))
-            .service(hello)
+            .default_service(actix_files::Files::new("/", "dist").index_file("index.html"))
             .service(response_chatgpt)
             .service(
                 web::scope("/json_crud")

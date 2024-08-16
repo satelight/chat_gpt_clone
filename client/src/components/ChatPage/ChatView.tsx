@@ -94,7 +94,7 @@ const ChatView = () => {
   // 質問を送って答え表示。
   async function sendQAndWriteA() {
     setIsWaitResponse(true);
-    setIsdisableButton(() => true);
+    setIsdisableButton(false);
     const userMessage: RequestMessage = {
       role: "user",
       content: questionText,
@@ -113,7 +113,7 @@ const ChatView = () => {
 
     setChatHistorys((c) => [...c, answerMessage]);
     setIsWaitResponse(false);
-    setIsdisableButton(() => false);
+    setIsdisableButton(true);
   }
 
   return (
@@ -153,11 +153,11 @@ const ChatView = () => {
             <button
               className=""
               onClick={sendQAndWriteA}
-              disabled={isdisableButton}
+              disabled={isdisableButton && isWaitResponse}
             >
               <FaArrowCircleUp
                 className={
-                  isdisableButton
+                  isdisableButton == true || isWaitResponse == true
                     ? "text-lg  justify-center h-8 w-8 text-gray-200"
                     : "text-lg  justify-center h-8 w-8 text-slate-600"
                 }

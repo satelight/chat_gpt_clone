@@ -12,21 +12,20 @@ use actix_cors::Cors;
 use actix_web::{
     http::{self, header::ContentType},
     middleware::Logger,
-    post, web, App, HttpResponse, HttpServer, Responder,
+    web, App, HttpResponse, HttpServer, Responder,
 };
 
 use dotenv::dotenv;
 use lib_chat_gpt::Message;
 use std::env;
 
-#[post("/response_chatgpt")]
 pub async fn response_chatgpt(req_body: web::Json<Vec<Message>>) -> impl Responder {
     // 環境変数からapiキーを取得
     let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
     let response = lib_chat_gpt::response_from_chat_gpt(req_body.0, &api_key)
         .await
         .unwrap();
-    println!("{}", response);
+
     HttpResponse::Ok()
         .content_type(ContentType::plaintext())
         .body(response)
@@ -43,7 +42,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173") // 開発用の許可ポート番号
-            .allowed_methods(vec!["GET", "POST"]) // 開発用の許可メソッド
+            .allowed_origin("http://localhost:8080") // 開発用の許可ポート番号
+            .allowed_methods(vec!["GET", "POST", "OPTIONS"]) // 開発用の許可メソッド
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
@@ -51,8 +51,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::new("%a %{User-agent}i"))
-            .default_service(actix_files::Files::new("/", "dist").index_file("index.html"))
-            .service(response_chatgpt)
+            .service(web::resource("/response_chatgpt").route(web::post().to(response_chatgpt)))
             .service(
                 web::scope("/json_crud")
                     .service(crud_json::route::read)
@@ -61,6 +60,7 @@ async fn main() -> std::io::Result<()> {
                     .service(crud_json::route::json_crud_route)
                     .service(crud_json::route::json_file_names),
             )
+            .service(actix_files::Files::new("/", "dist").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

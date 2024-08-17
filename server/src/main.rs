@@ -60,6 +60,7 @@ async fn main() -> std::io::Result<()> {
                     .service(crud_json::route::json_crud_route)
                     .service(crud_json::route::json_file_names),
             )
+            // 最後に書かないとすべてのルートがgetメソッド限定として動く。一番下に書くこと。
             .service(actix_files::Files::new("/", "dist").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?

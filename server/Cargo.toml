@@ -1,5 +1,5 @@
 [package]
-name = "chat_gpt_api"
+name = "chat_gpt_assistant"
 version = "0.1.0"
 edition = "2021"
 

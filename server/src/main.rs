@@ -42,7 +42,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173") // 開発用の許可ポート番号
-            .allowed_origin("http://localhost:8080") // 開発用の許可ポート番号
             .allowed_methods(vec!["GET", "POST", "OPTIONS"]) // 開発用の許可メソッド
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)

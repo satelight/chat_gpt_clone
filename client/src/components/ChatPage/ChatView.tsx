@@ -36,7 +36,6 @@ const Answer = ({ answerText }: { answerText: string }) => {
 const Loading = () => {
   return (
     <div className="w-full">
-      {/* <div className=" h-4 w-4 bg-blue-600 rounded-full"></div> */}
       <div className="animate-pulse mt-4 mx-32 px-8 rounded-full text-lg">
         ...回答待ち
       </div>
@@ -93,8 +92,9 @@ const ChatView = () => {
 
   // 質問を送って答え表示。
   async function sendQAndWriteA() {
+    // 質問が返ってくるまでは「回答待ち」の表示と次の質問はできないようにしている。
     setIsWaitResponse(true);
-    setIsdisableButton(false);
+    setIsdisableButton(true);
     const userMessage: RequestMessage = {
       role: "user",
       content: questionText,
@@ -112,8 +112,10 @@ const ChatView = () => {
     chatHistorysForRequest.push(answerMessage); //useStateは随時に変数を更新しないため、普通の配列に入れている。
 
     setChatHistorys((c) => [...c, answerMessage]);
+
+    // 「回答待ち」の表示と次の質問を受け付けるようにする。
     setIsWaitResponse(false);
-    setIsdisableButton(true);
+    setIsdisableButton(false);
   }
 
   return (
@@ -153,7 +155,7 @@ const ChatView = () => {
             <button
               className=""
               onClick={sendQAndWriteA}
-              disabled={isdisableButton && isWaitResponse}
+              disabled={isdisableButton}
             >
               <FaArrowCircleUp
                 className={
